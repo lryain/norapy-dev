@@ -13,6 +13,7 @@
 - ovos-config - OVOS configuration manager library
 - ovos_utils - collection of simple utilities for use across the mycroft ecosystem
 - ovos-bus-client
+- ovos-m2v-pipeline - An intent matching(classification) pipeline for OpenVoiceOS 位于：TigreGotico库中
 
 ## 服务 核心概念：
     Media Service
@@ -52,17 +53,17 @@
 - ovos-audio-plugin-mpv - MPV OVOS 插件将 MPV 媒体播放器功能与(OVOS) 生态系统集成，提供用于播放各种媒体格式的音频后端。
 - ovos-media-plugin-spotify - Spotify 媒体插件 （暂未下载）
 - ovos-media-plugin-chromecast - Chromecast 媒体插件（暂未下载）
-- ovos_plugin_common_play[extractors] - 公共播放插件（暂未找到）
+- ovos_plugin_common_play[extractors]/ovos-ocp-audio-plugin - 公共播放插件（暂未找到）
 # gui
 - ovos-gui-plugin-shell-companion - Shell companion 提供与ovos-shell集成的各种总线API
 # PHAL plugins
-- ovos-phal-plugin-alsa - ALSA 插件
-- ovos-phal-plugin-system - 向 OVOS 提供系统特定命令。该插件的 dbus 接口尚未建立。
-- ovos-phal-plugin-network-manager - NetworkManager plugin for PHAL
-- ovos-phal-plugin-ipgeo - IP地理位置插件
-- ovos-phal-plugin-connectivity-events - 连接性事件插件
-- ovos-phal-plugin-oauth - OAuth 插件
-- ovos-phal-plugin-wifi-setup - Central Wifi Setup Plugin for PHAL
+- ovos-PHAL-plugin-alsa - ALSA 插件
+- ovos-PHAL-plugin-system - 向 OVOS 提供系统特定命令。该插件的 dbus 接口尚未建立。
+- ovos-PHAL-plugin-network-manager - NetworkManager plugin for PHAL
+- ovos-PHAL-plugin-ipgeo - IP地理位置插件
+- ovos-PHAL-plugin-connectivity-events - 连接性事件插件
+- ovos-PHAL-plugin-oauth - OAuth 插件
+- ovos-PHAL-plugin-wifi-setup - Central Wifi Setup Plugin for PHAL
 - ovos-PHAL-plugin-hotkeys - map key presses to OVOS bus events
 - ovos-PHAL-plugin-mk2-fan-control - ovos-PHAL-plugin-mk2-v6-fan-control
 # workshop
@@ -131,6 +132,9 @@ ovos-bus-client/ovos_bus_client - messagebus client for the OVOS ecosystem
 - ovos-skill-screenshot - 截屏技能
 - ovos-skill-color-picker - 颜色选择器技能
 
+## tools
+- ovos-skill-application-launcher - launch applications by voice 
+
 
 ## skills-internet that require internet connectivity, should not be installed in offline devices
 - ovos-skill-weather - OpenVoiceOS 官方天气技能，提供天气状况和预报。
@@ -150,4 +154,4 @@ ovos-bus-client/ovos_bus_client - messagebus client for the OVOS ecosystem
 
 # 不进行维护
 - ovos-gui-plugin-shell-companion - provides various bus APIs that integrate with ovos-shell
-- ovos-m2v-pipeline - An intent matching(classification) pipeline for OpenVoiceOS
+
