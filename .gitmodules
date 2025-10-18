@@ -115,6 +115,10 @@
 	path = engine/engine-plugins/ovos-microphone-plugin-sounddevice
 	url = https://github.com/lryain/ovos-microphone-plugin-sounddevice
 
+[submodule "engine/engine-plugins/ovos-ocp-news-plugin"]
+	path = engine/engine-plugins/ovos-ocp-news-plugin
+	url = https://github.com/lryain/ovos-ocp-news-plugin
+
 [submodule "engine/engine-plugins/ovos-ocp-pipeline-plugin"]
 	path = engine/engine-plugins/ovos-ocp-pipeline-plugin
 	url = https://github.com/lryain/ovos-ocp-pipeline-plugin
@@ -123,17 +127,9 @@
 	path = engine/engine-plugins/ovos-openai-plugin
 	url = https://github.com/lryain/ovos-openai-plugin
 
-[submodule "engine/engine-plugins/ovos-solver-YesNo-plugin"]
-	path = engine/engine-plugins/ovos-solver-YesNo-plugin
-	url = https://github.com/lryain/ovos-solver-YesNo-plugin
-
 [submodule "engine/engine-plugins/ovos-solver-failure-plugin"]
 	path = engine/engine-plugins/ovos-solver-failure-plugin
 	url = https://github.com/lryain/ovos-solver-failure-plugin
-
-[submodule "engine/engine-plugins/ovos-stt-server-plugin"]
-	path = engine/engine-plugins/ovos-stt-server-plugin
-	url = https://github.com/lryain/ovos-stt-server-plugin
 
 [submodule "engine/engine-plugins/ovos-tts-plugin-piper"]
 	path = engine/engine-plugins/ovos-tts-plugin-piper
@@ -150,10 +146,6 @@
 [submodule "engine/engine-plugins/ovos-vad-plugin-silero"]
 	path = engine/engine-plugins/ovos-vad-plugin-silero
 	url = https://github.com/lryain/ovos-vad-plugin-silero
-
-[submodule "engine/engine-plugins/ovos-ww-plugin-openWakeWord"]
-	path = engine/engine-plugins/ovos-ww-plugin-openWakeWord
-	url = https://github.com/lryain/ovos-ww-plugin-openWakeWord
 
 [submodule "engine/engine-plugins/ovos-ww-plugin-precise-lite"]
 	path = engine/engine-plugins/ovos-ww-plugin-precise-lite
@@ -286,6 +278,10 @@
 [submodule "engine/engine-skills/ovos-skill-personal"]
 	path = engine/engine-skills/ovos-skill-personal
 	url = https://github.com/lryain/ovos-skill-personal
+
+[submodule "engine/engine-skills/ovos-skill-pyradios"]
+	path = engine/engine-skills/ovos-skill-pyradios
+	url = https://github.com/lryain/ovos-skill-pyradios
 
 [submodule "engine/engine-skills/ovos-skill-randomness"]
 	path = engine/engine-skills/ovos-skill-randomness
