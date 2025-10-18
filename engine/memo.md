@@ -33,6 +33,7 @@
 # VAD plugins
 - ovos-vad-plugin-noise - 旧的 ovos-listener 中提取的简单 VAD 插件。只能用作后备选项（未下载）
 - precise-lite-trainer - 用于训练 Precise-Lite 唤醒词模型的工具包（未下载）
+- ovos-vad-plugin-webrtcvad - 使用 webrtcvad 进行语音活动检测的 ovos 插件
 - ovos-vad-plugin-silero - 基于 Silero VAD 的 OVOS VAD 插件
 # Wake Word plugins Note: tflite_runtime also need to be installed
 - ovos-ww-plugin-precise-lite - Precision-lite 的唤醒词插件

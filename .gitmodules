@@ -97,7 +97,7 @@
 
 [submodule "engine/engine-plugins/ovos-bidirectional-translation-plugin"]
 	path = engine/engine-plugins/ovos-bidirectional-translation-plugin
-	url = https://github.com/OpenVoiceOS/ovos-bidirectional-translation-plugin
+	url = https://github.com/lryain/ovos-bidirectional-translation-plugin
 
 [submodule "engine/engine-plugins/ovos-common-query-pipeline-plugin"]
 	path = engine/engine-plugins/ovos-common-query-pipeline-plugin
