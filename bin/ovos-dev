@@ -153,14 +153,15 @@ if [ ! -d "$VENV_PATH" ]; then
     log_info "Upgrading pip and installing core packages..."
     pip install --quiet --upgrade pip setuptools wheel
     
-    log_info "Installing OVOS core components..."
+    log_info "Installing OVOS development environment using workspace manager..."
     cd "$ENGINE_DIR"
-    pip install --quiet -e ./engine-core/ovos-core
-    pip install --quiet -e ./engine-core/ovos-messagebus
-    pip install --quiet -e ./engine-core/ovos-config
-    pip install --quiet -e ./engine-core/ovos-plugin-manager
     
-    log_success "Virtual environment created and core components installed"
+    # Use workspace-based installation (faster, more organized)
+    python3 install-workspaces.py core
+    if [ $? -ne 0 ]; then
+        log_error "Development environment installation failed"
+        exit 1
+    fi
 else
     log_success "Virtual environment already exists"
     source "$VENV_PATH/bin/activate"
@@ -239,24 +240,26 @@ echo ""
 if [ "$SKIP_MB" = false ]; then
     log_info "Starting message bus..."
     
-    # 检查端口是否已被占用
-    if nc -z localhost 8181 2>/dev/null; then
-        log_warn "Message bus already running on port 8181"
-    else
+    # 检查端口是否已被占用 - 使用 python 方法
+    if python3 -c "import socket; s = socket.socket(); s.bind(('localhost', 8181)); s.close()" 2>/dev/null; then
+        # 端口是空闲的，启动 messagebus
         cd "$ENGINE_DIR"
-        python3 -m ovos_messagebus.service > "$LOG_DIR/messagebus.log" 2>&1 &
+        python3 -m ovos_messagebus > "$LOG_DIR/messagebus.log" 2>&1 &
         MB_PID=$!
         
         # 等待消息总线启动
-        sleep 2
+        sleep 3
         
-        if nc -z localhost 8181 2>/dev/null; then
+        # 再次检查端口
+        if ! python3 -c "import socket; s = socket.socket(); s.bind(('localhost', 8181)); s.close()" 2>/dev/null; then
             log_success "Message bus started (PID: $MB_PID)"
         else
             log_error "Message bus failed to start"
-            log_error "Check log: cat $LOG_DIR/messagebus.log"
+            log_error "Check log: tail -40 $LOG_DIR/messagebus.log"
             exit 1
         fi
+    else
+        log_warn "Message bus already running on port 8181"
     fi
 else
     log_info "Skipping message bus startup (assuming already running)"
