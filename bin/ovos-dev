@@ -1,0 +1,287 @@
+#!/bin/bash
+
+################################################################################
+# OpenVoiceOS Development Mode Startup Script
+# This script provides a simplified way to start OVOS in development mode
+################################################################################
+
+set -e
+
+# 获取脚本所在目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR"
+ENGINE_DIR="$PROJECT_ROOT/engine"
+VENV_PATH="$ENGINE_DIR/venv"
+LOG_DIR="$PROJECT_ROOT/logs"
+
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# 日志函数
+log_info() {
+    echo -e "${BLUE}ℹ${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}✗${NC} $1"
+}
+
+# 显示帮助信息
+show_help() {
+    cat << EOF
+OpenVoiceOS Development Mode Startup Script
+
+Usage: $0 [OPTIONS]
+
+Options:
+    -h, --help              Show this help message
+    -s, --setup-only        Only setup environment, don't start services
+    -v, --verbose           Enable verbose output
+    -l, --language LANG     Set language (default: en-us)
+    -j, --skip-mb           Skip message bus (assumes it's already running)
+    -k, --kill              Kill all running OVOS processes
+    -c, --clean             Clean cache and logs before starting
+
+Examples:
+    # Start OVOS with English
+    $0 --language en-us
+    
+    # Start OVOS with Chinese
+    $0 --language zh-cn
+    
+    # Only setup environment
+    $0 --setup-only
+    
+    # Kill all OVOS processes
+    $0 --kill
+
+EOF
+}
+
+# 命令行参数解析
+SETUP_ONLY=false
+VERBOSE=false
+LANGUAGE="en-us"
+SKIP_MB=false
+CLEAN=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -s|--setup-only)
+            SETUP_ONLY=true
+            shift
+            ;;
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -l|--language)
+            LANGUAGE="$2"
+            shift 2
+            ;;
+        -j|--skip-mb)
+            SKIP_MB=true
+            shift
+            ;;
+        -k|--kill)
+            log_warn "Killing all OVOS processes..."
+            pkill -f "ovos-core" 2>/dev/null || true
+            pkill -f "ovos_messagebus" 2>/dev/null || true
+            sleep 1
+            log_success "All OVOS processes killed"
+            exit 0
+            ;;
+        -c|--clean)
+            CLEAN=true
+            shift
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+# 清理缓存（如果指定）
+if [ "$CLEAN" = true ]; then
+    log_info "Cleaning cache and logs..."
+    rm -rf ~/.local/share/mycroft/cache/* 2>/dev/null || true
+    rm -rf "$LOG_DIR"/* 2>/dev/null || true
+    log_success "Cache and logs cleaned"
+fi
+
+echo ""
+echo -e "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║     OpenVoiceOS Development Mode - Setup & Launch       ║${NC}"
+echo -e "${BLUE}╚══════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+# 检查 Python
+log_info "Checking Python version..."
+if ! command -v python3 &> /dev/null; then
+    log_error "Python3 not found. Please install Python 3.9+"
+    exit 1
+fi
+
+PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+log_success "Python $PYTHON_VERSION found"
+
+# 创建虚拟环境（如果不存在）
+if [ ! -d "$VENV_PATH" ]; then
+    log_info "Creating Python virtual environment..."
+    cd "$ENGINE_DIR"
+    python3 -m venv venv
+    source "$VENV_PATH/bin/activate"
+    
+    log_info "Upgrading pip and installing core packages..."
+    pip install --quiet --upgrade pip setuptools wheel
+    
+    log_info "Installing OVOS core components..."
+    cd "$ENGINE_DIR"
+    pip install --quiet -e ./engine-core/ovos-core
+    pip install --quiet -e ./engine-core/ovos-messagebus
+    pip install --quiet -e ./engine-core/ovos-config
+    pip install --quiet -e ./engine-core/ovos-plugin-manager
+    
+    log_success "Virtual environment created and core components installed"
+else
+    log_success "Virtual environment already exists"
+    source "$VENV_PATH/bin/activate"
+fi
+
+# 创建日志目录
+mkdir -p "$LOG_DIR"
+
+# 创建/更新配置文件
+log_info "Setting up configuration..."
+CONFIG_DIR="$HOME/.config/mycroft"
+CONFIG_FILE="$CONFIG_DIR/mycroft.conf"
+
+mkdir -p "$CONFIG_DIR"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    cat > "$CONFIG_FILE" << EOF
+{
+  "language": "$LANGUAGE",
+  "locale": "${LANGUAGE%-*}-${LANGUAGE#*-}",
+  "system_unit": "metric",
+  "time_format": "full",
+  "date_format": "full",
+  
+  "server": {
+    "metrics": false,
+    "metrics_port": 13579,
+    "port": 8181
+  },
+  
+  "audio": {
+    "default-backend": "mpv",
+    "backends": {
+      "mpv": {
+        "active": true
+      }
+    }
+  },
+  
+  "skills": {
+    "auto_update": false,
+    "installer": "pip"
+  },
+  
+  "stt": {
+    "module": "ovos-stt-plugin-chromium"
+  },
+  
+  "tts": {
+    "module": "ovos-tts-plugin-piper"
+  }
+}
+EOF
+    log_success "Configuration created: $CONFIG_FILE"
+else
+    # 更新语言设置
+    if [ "$VERBOSE" = true ]; then
+        log_info "Configuration already exists at $CONFIG_FILE"
+    fi
+fi
+
+log_success "Configuration ready"
+echo ""
+
+# 如果只是设置环境，则退出
+if [ "$SETUP_ONLY" = true ]; then
+    log_success "Environment setup complete!"
+    log_info "To start OVOS, run: $0"
+    exit 0
+fi
+
+echo -e "${BLUE}Starting Services...${NC}"
+echo ""
+
+# 启动消息总线（如果未指定跳过）
+if [ "$SKIP_MB" = false ]; then
+    log_info "Starting message bus..."
+    
+    # 检查端口是否已被占用
+    if nc -z localhost 8181 2>/dev/null; then
+        log_warn "Message bus already running on port 8181"
+    else
+        cd "$ENGINE_DIR"
+        python3 -m ovos_messagebus.service > "$LOG_DIR/messagebus.log" 2>&1 &
+        MB_PID=$!
+        
+        # 等待消息总线启动
+        sleep 2
+        
+        if nc -z localhost 8181 2>/dev/null; then
+            log_success "Message bus started (PID: $MB_PID)"
+        else
+            log_error "Message bus failed to start"
+            log_error "Check log: cat $LOG_DIR/messagebus.log"
+            exit 1
+        fi
+    fi
+else
+    log_info "Skipping message bus startup (assuming already running)"
+fi
+
+sleep 1
+echo ""
+log_info "Starting OVOS core..."
+cd "$ENGINE_DIR"
+
+# 构建 OVOS 启动参数
+OVOS_ARGS=""
+if [ "$VERBOSE" = true ]; then
+    export OVOS_LOG_LEVEL=DEBUG
+    log_info "Debug logging enabled"
+fi
+
+# 启动 OVOS
+ovos-core $OVOS_ARGS
+
+# 如果 OVOS 退出，清理进程
+trap "log_warn 'OVOS stopped'; pkill -f ovos_messagebus 2>/dev/null || true" EXIT INT TERM
+
+echo ""
+echo -e "${YELLOW}OVOS has stopped${NC}"
+log_info "To view logs, run:"
+echo "  tail -f $LOG_DIR/messagebus.log"
+echo "  tail -f ~/.local/share/mycroft/logs/skills.log"
