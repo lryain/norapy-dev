@@ -22,7 +22,16 @@ def update_requirements(root_dir):
     package_to_subdir = build_package_mapping(root_dir)
     print("Package mapping:", package_to_subdir)
     for dirpath, dirnames, filenames in os.walk(root_dir):
+        # Process both requirements directories and root-level requirements.txt files
+        should_process = False
         if os.path.basename(dirpath) == 'requirements':
+            should_process = True
+        elif 'requirements.txt' in filenames and not dirpath.endswith('/requirements'):
+            # Check if this is a package root directory (contains setup.py or pyproject.toml)
+            if any(os.path.exists(os.path.join(dirpath, f)) for f in ['setup.py', 'pyproject.toml']):
+                should_process = True
+        
+        if should_process:
             req_dir = dirpath
             # Get current subdir
             parts = req_dir.split(os.sep)
