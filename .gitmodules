@@ -418,10 +418,6 @@ url = https://github.com/lryain/ovos-stt-plugin-fasterwhisper
 path = engine/engine-plugins/ovos-stt-plugin-server
 url = https://github.com/lryain/ovos-stt-server-plugin
 
-[submodule "engine/engine-plugins/ovos-stt-plugin-vosk"]
-path = engine/engine-plugins/ovos-stt-plugin-vosk
-url = https://github.com/lryain/ovos-stt-plugin-vosk
-
 [submodule "engine/engine-plugins/ovos-translate-server-plugin"]
 path = engine/engine-plugins/ovos-translate-server-plugin
 url = https://github.com/lryain/ovos-translate-server-plugin
@@ -479,5 +475,6 @@ path = scripts/ovos-installer
 url = https://github.com/lryain/ovos-installer
 
 [submodule "engine/engine-core/ovos-core"]
-	path = engine/engine-core/ovos-core
-	url = https://github.com/lryain/ovos-core.git
+path = engine/engine-core/ovos-core
+url = https://github.com/lryain/ovos-core.git
+
