@@ -474,3 +474,6 @@ url = https://github.com/lryain/ovos-skill-config-tool.git
 path = engine/engine-core/ovos-core
 url = https://github.com/lryain/ovos-core.git
 
+[submodule "engine/engine-plugins/ovos-stt-plugin-vosk"]
+	path = engine/engine-plugins/ovos-stt-plugin-vosk
+	url = https://github.com/lryain/ovos-stt-plugin-vosk
