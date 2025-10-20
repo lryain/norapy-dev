@@ -347,3 +347,151 @@
 	path = engine/engine-utils/padacioso
 	url = https://github.com/lryain/padacioso
 
+[submodule "engine/engine-pipelines/ovos-m2v-pipeline"]
+	path = engine/engine-pipelines/ovos-m2v-pipeline
+	url = https://github.com/lryain/ovos-m2v-pipeline
+
+[submodule "engine/engine-plugins/ovos-PHAL-plugin-wallpaper-manager"]
+	path = engine/engine-plugins/ovos-PHAL-plugin-wallpaper-manager
+	url = https://github.com/lryain/ovos-PHAL-plugin-wallpaper-manager
+
+[submodule "engine/engine-plugins/ovos-audio-plugin-simple"]
+	path = engine/engine-plugins/ovos-audio-plugin-simple
+	url = https://github.com/lryain/ovos-audio-plugin-simple
+
+[submodule "engine/engine-plugins/ovos-dialog-normalizer-plugin"]
+	path = engine/engine-plugins/ovos-dialog-normalizer-plugin
+	url = https://github.com/lryain/ovos-dialog-normalizer-plugin
+
+[submodule "engine/engine-plugins/ovos-flashrank-reranker-plugin"]
+	path = engine/engine-plugins/ovos-flashrank-reranker-plugin
+	url = https://github.com/lryain/ovos-flashrank-reranker-plugin
+
+[submodule "engine/engine-plugins/ovos-media-plugin-chromecast"]
+	path = engine/engine-plugins/ovos-media-plugin-chromecast
+	url = https://github.com/lryain/ovos-media-plugin-chromecast
+
+[submodule "engine/engine-plugins/ovos-media-plugin-spotify"]
+	path = engine/engine-plugins/ovos-media-plugin-spotify
+	url = https://github.com/lryain/ovos-media-plugin-spotify
+
+[submodule "engine/engine-plugins/ovos-ocp-audio-plugin"]
+	path = engine/engine-plugins/ovos-ocp-audio-plugin
+	url = https://github.com/lryain/ovos-ocp-audio-plugin
+
+[submodule "engine/engine-plugins/ovos-ocp-files-plugin"]
+	path = engine/engine-plugins/ovos-ocp-files-plugin
+	url = https://github.com/lryain/ovos-ocp-files-plugin
+
+[submodule "engine/engine-plugins/ovos-ocp-m3u-plugin"]
+	path = engine/engine-plugins/ovos-ocp-m3u-plugin
+	url = https://github.com/lryain/ovos-ocp-m3u-plugin
+
+[submodule "engine/engine-plugins/ovos-ocp-rss-plugin"]
+	path = engine/engine-plugins/ovos-ocp-rss-plugin
+	url = https://github.com/lryain/ovos-ocp-rss-plugin
+
+[submodule "engine/engine-plugins/ovos-ocp-youtube-plugin"]
+	path = engine/engine-plugins/ovos-ocp-youtube-plugin
+	url = https://github.com/lryain/ovos-ocp-youtube-plugin
+
+[submodule "engine/engine-plugins/ovos-padatious-pipeline-plugin"]
+	path = engine/engine-plugins/ovos-padatious-pipeline-plugin
+	url = https://github.com/lryain/ovos-padatious-pipeline-plugin
+
+[submodule "engine/engine-plugins/ovos-solver-YesNo-plugin"]
+	path = engine/engine-plugins/ovos-solver-YesNo-plugin
+	url = UNKNOWN
+
+[submodule "engine/engine-plugins/ovos-solver-yes-no-plugin"]
+	path = engine/engine-plugins/ovos-solver-yes-no-plugin
+	url = https://github.com/lryain/ovos-solver-YesNo-plugin
+
+[submodule "engine/engine-plugins/ovos-stt-http-server"]
+	path = engine/engine-plugins/ovos-stt-http-server
+	url = https://github.com/lryain/ovos-stt-http-server
+
+[submodule "engine/engine-plugins/ovos-stt-plugin-azure"]
+	path = engine/engine-plugins/ovos-stt-plugin-azure
+	url = https://github.com/lryain/ovos-stt-plugin-azure
+
+[submodule "engine/engine-plugins/ovos-stt-plugin-chromium"]
+	path = engine/engine-plugins/ovos-stt-plugin-chromium
+	url = https://github.com/lryain/ovos-stt-plugin-chromium
+
+[submodule "engine/engine-plugins/ovos-stt-plugin-fasterwhisper"]
+	path = engine/engine-plugins/ovos-stt-plugin-fasterwhisper
+	url = https://github.com/lryain/ovos-stt-plugin-fasterwhisper
+
+[submodule "engine/engine-plugins/ovos-stt-plugin-server"]
+	path = engine/engine-plugins/ovos-stt-plugin-server
+	url = https://github.com/lryain/ovos-stt-server-plugin
+
+[submodule "engine/engine-plugins/ovos-stt-plugin-vosk"]
+	path = engine/engine-plugins/ovos-stt-plugin-vosk
+	url = https://github.com/lryain/ovos-stt-plugin-vosk
+
+[submodule "engine/engine-plugins/ovos-stt-server-plugin"]
+	path = engine/engine-plugins/ovos-stt-server-plugin
+	url = UNKNOWN
+
+[submodule "engine/engine-plugins/ovos-translate-server-plugin"]
+	path = engine/engine-plugins/ovos-translate-server-plugin
+	url = https://github.com/lryain/ovos-translate-server-plugin
+
+[submodule "engine/engine-plugins/ovos-tts-plugin-coqui"]
+	path = engine/engine-plugins/ovos-tts-plugin-coqui
+	url = https://github.com/lryain/ovos-tts-plugin-coqui
+
+[submodule "engine/engine-plugins/ovos-tts-plugin-espeakNG"]
+	path = engine/engine-plugins/ovos-tts-plugin-espeakNG
+	url = https://github.com/lryain/ovos-tts-plugin-espeakNG
+
+[submodule "engine/engine-plugins/ovos-tts-server-plugin"]
+	path = engine/engine-plugins/ovos-tts-server-plugin
+	url = https://github.com/lryain/ovos-tts-server-plugin
+
+[submodule "engine/engine-plugins/ovos-vad-plugin-noise"]
+	path = engine/engine-plugins/ovos-vad-plugin-noise
+	url = https://github.com/lryain/ovos-vad-plugin-noise
+
+[submodule "engine/engine-plugins/ovos-vad-plugin-webrtcvad"]
+	path = engine/engine-plugins/ovos-vad-plugin-webrtcvad
+	url = https://github.com/lryain/ovos-vad-plugin-webrtcvad
+
+[submodule "engine/engine-plugins/ovos-ww-plugin-openWakeWord"]
+	path = engine/engine-plugins/ovos-ww-plugin-openWakeWord
+	url = UNKNOWN
+
+[submodule "engine/engine-skills/ovos-skill-application-launcher"]
+	path = engine/engine-skills/ovos-skill-application-launcher
+	url = https://github.com/lryain/ovos-skill-application-launcher
+
+[submodule "engine/engine-skills/ovos-skill-ip"]
+	path = engine/engine-skills/ovos-skill-ip
+	url = https://github.com/lryain/ovos-skill-ip
+
+[submodule "engine/engine-skills/ovos-skill-news"]
+	path = engine/engine-skills/ovos-skill-news
+	url = https://github.com/lryain/ovos-skill-news
+
+[submodule "engine/engine-skills/ovos-skill-speedtest"]
+	path = engine/engine-skills/ovos-skill-speedtest
+	url = https://github.com/lryain/ovos-skill-speedtest
+
+[submodule "engine/engine-skills/ovos-skill-wallpapers"]
+	path = engine/engine-skills/ovos-skill-wallpapers
+	url = https://github.com/lryain/ovos-skill-wallpapers
+
+[submodule "engine/engine-skills/ovos-skill-wikipedia"]
+	path = engine/engine-skills/ovos-skill-wikipedia
+	url = https://github.com/lryain/ovos-skill-wikipedia
+
+[submodule "engine/engine-utils/ovos-skill-config-tool"]
+	path = engine/engine-utils/ovos-skill-config-tool
+	url = https://github.com/lryain/ovos-skill-config-tool.git
+
+[submodule "scripts/ovos-installer"]
+	path = scripts/ovos-installer
+	url = https://github.com/lryain/ovos-installer
+
