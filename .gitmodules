@@ -470,10 +470,6 @@ url = https://github.com/lryain/ovos-skill-wikipedia
 path = engine/engine-utils/ovos-skill-config-tool
 url = https://github.com/lryain/ovos-skill-config-tool.git
 
-[submodule "scripts/ovos-installer"]
-path = scripts/ovos-installer
-url = https://github.com/lryain/ovos-installer
-
 [submodule "engine/engine-core/ovos-core"]
 path = engine/engine-core/ovos-core
 url = https://github.com/lryain/ovos-core.git
