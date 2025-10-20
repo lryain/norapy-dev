@@ -4,3 +4,28 @@ logs/
 *.diff
 venv
 venv/
+# Bytecode, caches
+__pycache__/
+*.py[cod]
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+
+# Editor/temp files
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Ignore wheel and egg artifacts
+*.egg
+*.whl
+
+# Coverage
+.pytest_cache/
+coverage.xml
+
+# node / front-end
+node_modules/
