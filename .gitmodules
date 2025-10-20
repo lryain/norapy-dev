@@ -14,10 +14,6 @@ url = https://github.com/lryain/ovos-audio
 path = engine/engine-core/ovos-config
 url = https://github.com/lryain/ovos-config
 
-[submodule "engine/engine-core/ovos-core"]
-path = engine/engine-core/ovos-core
-url = https://github.com/lryain/ovos-core
-
 [submodule "engine/engine-core/ovos-dinkum-listener"]
 path = engine/engine-core/ovos-dinkum-listener
 url = https://github.com/lryain/ovos-dinkum-listener
