@@ -72,6 +72,13 @@ WORKSPACES = {
             'engine-servers/ovos-tts-server',
         ]
     },
+    'clients': {
+        'description': '插件',
+        'packages': [
+            'engine-plugin/ovos-ocp-pipeline-plugin',
+        ]
+    },
+    
 }
 
 # 推荐的默认工作区

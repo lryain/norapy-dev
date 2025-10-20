@@ -23,6 +23,9 @@ import subprocess
 import sys
 import os
 import re
+import argparse
+import site
+import sysconfig
 from pathlib import Path
 
 # Colors for output
@@ -98,6 +101,7 @@ INSTALL_ORDER = [
     ("./engine-core/ovos-workshop", "ovos-workshop (skill framework)"),
     ("./engine-core/ovos-messagebus", "ovos-messagebus (IPC server)"),
     ("./engine-core/ovos-core", "ovos-core (main system)"),
+    ("./engine-plugin/ovos-ocp-pipeline-plugin", "ovos-ocp-pipeline-plugin (OCP pipeline)")
 ]
 
 def main():
@@ -105,6 +109,13 @@ def main():
     engine_dir = Path(__file__).parent.absolute()
     os.chdir(engine_dir)
     
+    parser = argparse.ArgumentParser(description='Install OVOS packages for development')
+    parser.add_argument('--skip-installed', action='store_true',
+                        help='Skip packages that are already installed (pip show)')
+    parser.add_argument('--skip-if-editable', action='store_true',
+                        help='Skip packages that are installed in editable mode pointing to the same path')
+    args = parser.parse_args()
+
     print(f"\n{BLUE}{'='*60}{NC}")
     print(f"{BLUE}OVOS Development Environment Installer{NC}")
     print(f"{BLUE}{'='*60}{NC}\n")
@@ -160,6 +171,7 @@ def main():
         ("./engine-core/ovos-workshop", "ovos-workshop (skill framework)"),
         ("./engine-core/ovos-messagebus", "ovos-messagebus (IPC server)"),
         ("./engine-core/ovos-core", "ovos-core (main system)"),
+        ("./engine-plugin/ovos-ocp-pipeline-plugin", "ovos-ocp-pipeline-plugin (OCP pipeline)"),
     ]
     
     for path, desc in core_packages:
@@ -179,7 +191,59 @@ def main():
     print()
     
     failed = []
+    skipped = []
+
+    # helper: check pip show
+    def pip_show(pkg_name):
+        p = subprocess.run([sys.executable, '-m', 'pip', 'show', pkg_name], capture_output=True, text=True)
+        return p.returncode == 0, p.stdout
+
+    # helper: find egg-link for a package name in site-packages dirs
+    def find_egg_link(pkg_name):
+        sp_dirs = []
+        try:
+            sp_dirs.extend(site.getsitepackages())
+        except Exception:
+            pass
+        try:
+            sp_dirs.append(sysconfig.get_paths().get('purelib'))
+        except Exception:
+            pass
+        for sp in filter(None, sp_dirs):
+            egg = Path(sp) / (pkg_name + '.egg-link')
+            if egg.exists():
+                try:
+                    with egg.open() as f:
+                        target = f.readline().strip()
+                        return target
+                except Exception:
+                    continue
+        return None
     for pkg in unique_packages:
+        pkg_name = Path(pkg['full_path']).name
+
+        # Optionally skip if package already installed
+        if args.skip_installed:
+            installed, info = pip_show(pkg_name)
+            if installed:
+                log_warn(f"Skipping {pkg['desc']}: {pkg_name} already installed (pip show)")
+                skipped.append(pkg['desc'])
+                continue
+
+        # Optionally skip if editable install already points to same path
+        if args.skip_if_editable:
+            egg_target = find_egg_link(pkg_name)
+            if egg_target:
+                try:
+                    egg_res = Path(egg_target).resolve()
+                    pkg_res = Path(pkg['full_path']).resolve()
+                    if egg_res == pkg_res:
+                        log_warn(f"Skipping {pkg['desc']}: editable install already points to {pkg_res}")
+                        skipped.append(pkg['desc'])
+                        continue
+                except Exception:
+                    pass
+
         print(f"  Installing {pkg['desc']}...")
         if run_pip(["-e", pkg['full_path']]):
             log_success(f"Installed {pkg['desc']}")
@@ -188,11 +252,16 @@ def main():
             failed.append(pkg['desc'])
         print()
     
-    if failed:
+    if failed or skipped:
         print(f"\n{RED}{'='*60}{NC}")
-        log_error(f"Failed to install {len(failed)} package(s):")
-        for pkg in failed:
-            print(f"  - {pkg}")
+        if failed:
+            log_error(f"Failed to install {len(failed)} package(s):")
+            for pkg in failed:
+                print(f"  - {pkg}")
+        if skipped:
+            log_warn(f"Skipped {len(skipped)} package(s):")
+            for pkg in skipped:
+                print(f"  - {pkg}")
         print(f"{RED}{'='*60}{NC}\n")
         return 1
     else:

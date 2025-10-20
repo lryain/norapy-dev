@@ -26,7 +26,7 @@
 - ovos-solver-failure-plugin - OVOS Failure Solver Plugin
 - ovos-utterance-corrections-plugin - 此插件提供了用于纠正或调整语音转文本（STT）输出的工具，以实现更好的意图匹配或改善用户体验。
 - ovos-utterance-plugin-cancel - 插件来查看转录短语的尾端，如果它以“nevermind that”或“cancel it”或“ignore that”结束，则忽略该话语。
-- ovos-bidirectional-translation-plugin - This package includes a UtteranceTransformer plugin and a DialogTransformer plugin, they work together to allow OVOS to speak in ANY language
+- ovos-bidirectional-translation-plugin/ovos-utterance-translation-plugin - This package includes a UtteranceTransformer plugin and a DialogTransformer plugin, they work together to allow OVOS to speak in ANY language
 - ovos-translate-server-plugin - 该插件在更广泛的背景下用于按需翻译话语/文本（例如，从solvers和ovos-bidirectional-explanation-plugin）
 - ovos-adapt-parser/ovos-adapt-pipeline-plugin - Adapt Intent Parser是一个灵活且可扩展的意图定义和确定框架。它旨在将自然语言文本解析为结构化意图，然后可以以编程方式调用。包含了一个已经不存在的mycroft-adapt的分支
 

@@ -76,6 +76,8 @@ VERBOSE=false
 LANGUAGE="en-us"
 SKIP_MB=false
 CLEAN=false
+# If true, force-stop ovos-core and ovos_messagebus on exit even if not started by this script
+FORCE_STOP=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -109,6 +111,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -c|--clean)
             CLEAN=true
+            shift
+            ;;
+        -K|--force-stop)
+            FORCE_STOP=true
             shift
             ;;
         *)
@@ -170,58 +176,182 @@ fi
 # 创建日志目录
 mkdir -p "$LOG_DIR"
 
+# Message bus PID (set when we start it)
+MB_PID=""
+# Whether this script started the message bus
+MB_STARTED=false
+
+# OVOS core PID (set when we start it)
+OVOS_PID=""
+# PID of tail process streaming ovos-core log to stdout
+TAIL_PID=""
+# Additional service PIDs and flags
+PHAL_PID=""
+PHAL_STARTED=false
+AUDIO_PID=""
+AUDIO_STARTED=false
+DINKUM_PID=""
+DINKUM_STARTED=false
+
+stop_messagebus() {
+    if [ "$MB_STARTED" = true ] && [ -n "$MB_PID" ]; then
+        # Check process still exists
+        if kill -0 "$MB_PID" 2>/dev/null; then
+            log_info "Stopping message bus (PID: $MB_PID)..."
+            kill "$MB_PID" 2>/dev/null || true
+
+            # wait up to 10 seconds for clean exit
+            for i in {1..10}; do
+                if kill -0 "$MB_PID" 2>/dev/null; then
+                    sleep 1
+                else
+                    break
+                fi
+            done
+
+            # If still alive, force kill
+            if kill -0 "$MB_PID" 2>/dev/null; then
+                log_warn "Message bus did not exit, sending SIGKILL..."
+                kill -9 "$MB_PID" 2>/dev/null || true
+            fi
+
+            # wait one final moment for reaping
+            wait "$MB_PID" 2>/dev/null || true
+            log_success "Message bus stopped"
+            MB_PID=""
+        fi
+    fi
+}
+
+stop_phal() {
+    if [ "$PHAL_STARTED" = true ] && [ -n "$PHAL_PID" ]; then
+        if kill -0 "$PHAL_PID" 2>/dev/null; then
+            log_info "Stopping OVOS PHAL (PID: $PHAL_PID)..."
+            kill "$PHAL_PID" 2>/dev/null || true
+            for i in {1..10}; do
+                if kill -0 "$PHAL_PID" 2>/dev/null; then
+                    sleep 1
+                else
+                    break
+                fi
+            done
+            if kill -0 "$PHAL_PID" 2>/dev/null; then
+                log_warn "OVOS PHAL did not exit, sending SIGKILL to PID..."
+                kill -9 "$PHAL_PID" 2>/dev/null || true
+            fi
+            # also try killing process group if present
+            if [ -n "$PHAL_PID" ]; then
+                PGID=$(ps -o pgid= -p "$PHAL_PID" 2>/dev/null | tr -d ' ')
+                if [ -n "$PGID" ]; then
+                    log_warn "Also sending SIGKILL to PHAL process group -$PGID"
+                    kill -9 -"$PGID" 2>/dev/null || true
+                fi
+            fi
+            wait "$PHAL_PID" 2>/dev/null || true
+            log_success "OVOS PHAL stopped"
+            PHAL_PID=""
+            PHAL_STARTED=false
+        fi
+    fi
+}
+
+stop_audio() {
+    if [ "$AUDIO_STARTED" = true ] && [ -n "$AUDIO_PID" ]; then
+        if kill -0 "$AUDIO_PID" 2>/dev/null; then
+            log_info "Stopping OVOS audio (PID: $AUDIO_PID)..."
+            kill "$AUDIO_PID" 2>/dev/null || true
+            for i in {1..10}; do
+                if kill -0 "$AUDIO_PID" 2>/dev/null; then
+                    sleep 1
+                else
+                    break
+                fi
+            done
+            if kill -0 "$AUDIO_PID" 2>/dev/null; then
+                log_warn "OVOS audio did not exit, sending SIGKILL to PID..."
+                kill -9 "$AUDIO_PID" 2>/dev/null || true
+            fi
+            if [ -n "$AUDIO_PID" ]; then
+                PGID=$(ps -o pgid= -p "$AUDIO_PID" 2>/dev/null | tr -d ' ')
+                if [ -n "$PGID" ]; then
+                    log_warn "Also sending SIGKILL to AUDIO process group -$PGID"
+                    kill -9 -"$PGID" 2>/dev/null || true
+                fi
+            fi
+            wait "$AUDIO_PID" 2>/dev/null || true
+            log_success "OVOS audio stopped"
+            AUDIO_PID=""
+            AUDIO_STARTED=false
+        fi
+    fi
+}
+
+stop_dinkum() {
+    if [ "$DINKUM_STARTED" = true ] && [ -n "$DINKUM_PID" ]; then
+        if kill -0 "$DINKUM_PID" 2>/dev/null; then
+            log_info "Stopping OVOS dinkum listener (PID: $DINKUM_PID)..."
+            kill "$DINKUM_PID" 2>/dev/null || true
+            for i in {1..10}; do
+                if kill -0 "$DINKUM_PID" 2>/dev/null; then
+                    sleep 1
+                else
+                    break
+                fi
+            done
+            if kill -0 "$DINKUM_PID" 2>/dev/null; then
+                log_warn "OVOS dinkum listener did not exit, sending SIGKILL to PID..."
+                kill -9 "$DINKUM_PID" 2>/dev/null || true
+            fi
+            if [ -n "$DINKUM_PID" ]; then
+                PGID=$(ps -o pgid= -p "$DINKUM_PID" 2>/dev/null | tr -d ' ')
+                if [ -n "$PGID" ]; then
+                    log_warn "Also sending SIGKILL to DINKUM process group -$PGID"
+                    kill -9 -"$PGID" 2>/dev/null || true
+                fi
+            fi
+            wait "$DINKUM_PID" 2>/dev/null || true
+            log_success "OVOS dinkum listener stopped"
+            DINKUM_PID=""
+            DINKUM_STARTED=false
+        fi
+    fi
+}
+
+stop_tail() {
+    if [ -n "$TAIL_PID" ]; then
+        if kill -0 "$TAIL_PID" 2>/dev/null; then
+            log_info "Stopping log tail (PID: $TAIL_PID)..."
+            kill "$TAIL_PID" 2>/dev/null || true
+            for i in {1..5}; do
+                if kill -0 "$TAIL_PID" 2>/dev/null; then
+                    sleep 1
+                else
+                    break
+                fi
+            done
+            if kill -0 "$TAIL_PID" 2>/dev/null; then
+                    log_warn "Tail did not exit, sending SIGKILL to PID..."
+                    kill -9 "$TAIL_PID" 2>/dev/null || true
+                fi
+                if [ -n "$TAIL_PID" ]; then
+                    PGID=$(ps -o pgid= -p "$TAIL_PID" 2>/dev/null | tr -d ' ')
+                    if [ -n "$PGID" ]; then
+                        log_warn "Also sending SIGKILL to TAIL process group -$PGID"
+                        kill -9 -"$PGID" 2>/dev/null || true
+                    fi
+                fi
+                wait "$TAIL_PID" 2>/dev/null || true
+            log_success "Log tail stopped"
+            TAIL_PID=""
+        fi
+    fi
+}
+
 # 创建/更新配置文件
 log_info "Setting up configuration..."
 CONFIG_DIR="$HOME/.config/mycroft"
 CONFIG_FILE="$CONFIG_DIR/mycroft.conf"
 
-mkdir -p "$CONFIG_DIR"
-
-if [ ! -f "$CONFIG_FILE" ]; then
-    cat > "$CONFIG_FILE" << EOF
-{
-  "language": "$LANGUAGE",
-  "locale": "${LANGUAGE%-*}-${LANGUAGE#*-}",
-  "system_unit": "metric",
-  "time_format": "full",
-  "date_format": "full",
-  
-  "server": {
-    "metrics": false,
-    "metrics_port": 13579,
-    "port": 8181
-  },
-  
-  "audio": {
-    "default-backend": "mpv",
-    "backends": {
-      "mpv": {
-        "active": true
-      }
-    }
-  },
-  
-  "skills": {
-    "auto_update": false,
-    "installer": "pip"
-  },
-  
-  "stt": {
-    "module": "ovos-stt-plugin-chromium"
-  },
-  
-  "tts": {
-    "module": "ovos-tts-plugin-piper"
-  }
-}
-EOF
-    log_success "Configuration created: $CONFIG_FILE"
-else
-    # 更新语言设置
-    if [ "$VERBOSE" = true ]; then
-        log_info "Configuration already exists at $CONFIG_FILE"
-    fi
-fi
 
 log_success "Configuration ready"
 echo ""
@@ -246,6 +376,7 @@ if [ "$SKIP_MB" = false ]; then
         cd "$ENGINE_DIR"
         python3 -m ovos_messagebus > "$LOG_DIR/messagebus.log" 2>&1 &
         MB_PID=$!
+        MB_STARTED=true
         
         # 等待消息总线启动
         sleep 3
@@ -277,11 +408,155 @@ if [ "$VERBOSE" = true ]; then
     log_info "Debug logging enabled"
 fi
 
-# 启动 OVOS
-ovos-core $OVOS_ARGS
 
-# 如果 OVOS 退出，清理进程
-trap "log_warn 'OVOS stopped'; pkill -f ovos_messagebus 2>/dev/null || true" EXIT INT TERM
+# Ensure we clean up messagebus and ovos-core when this script exits
+on_exit() {
+    log_warn "OVOS stopped"
+
+    # Stop OVOS core if we started it
+    if [ -n "$OVOS_PID" ]; then
+        if kill -0 "$OVOS_PID" 2>/dev/null; then
+            log_info "Stopping OVOS core (PID: $OVOS_PID)..."
+            kill "$OVOS_PID" 2>/dev/null || true
+
+            # wait up to 10 seconds
+            for i in {1..10}; do
+                if kill -0 "$OVOS_PID" 2>/dev/null; then
+                    sleep 1
+                else
+                    break
+                fi
+            done
+
+            if kill -0 "$OVOS_PID" 2>/dev/null; then
+                log_warn "OVOS core did not exit, sending SIGKILL..."
+                kill -9 "$OVOS_PID" 2>/dev/null || true
+            fi
+
+            wait "$OVOS_PID" 2>/dev/null || true
+            log_success "OVOS core stopped"
+            OVOS_PID=""
+        fi
+    else
+        # Fallback: try to kill any ovos-core processes if present and user requested cleanup
+        if [ "$FORCE_STOP" = true ]; then
+            log_warn "Force stopping ovos-core processes..."
+            pkill -f "ovos-core" 2>/dev/null || true
+        fi
+    fi
+
+    # Stop additional services we may have started
+    stop_tail
+    stop_dinkum
+    stop_audio
+    stop_phal
+
+    # Fallback: if any of those processes are still lingering, forcibly pkill by pattern
+    if pgrep -f ovos-dinkum-listener >/dev/null 2>&1; then
+        log_warn "Reaping lingering ovos-dinkum-listener processes..."
+        pkill -f ovos-dinkum-listener 2>/dev/null || true
+    fi
+
+    if pgrep -f "tail -n +1 -f" >/dev/null 2>&1; then
+        log_warn "Reaping lingering tail processes..."
+        pkill -f "tail -n +1 -f" 2>/dev/null || true
+    fi
+
+    # Stop message bus if we started it; if force-stop requested, kill any messagebus processes
+    if [ "$FORCE_STOP" = true ]; then
+        log_warn "Force stopping ovos_messagebus processes..."
+        pkill -f "ovos_messagebus" 2>/dev/null || true
+        # also attempt to reap PID if set
+        stop_messagebus
+    else
+        stop_messagebus
+    fi
+}
+trap on_exit EXIT INT TERM
+
+# Start dependent services in order: PHAL -> audio -> dinkum -> core
+
+# Start PHAL
+if [ "$SKIP_MB" = false ]; then
+    log_info "Starting OVOS PHAL..."
+    if command -v ovos_PHAL >/dev/null 2>&1; then
+        OVOS_PHAL_LOG="$LOG_DIR/ovos-phal.log"
+        setsid ovos_PHAL > "$OVOS_PHAL_LOG" 2>&1 &
+        PHAL_PID=$!
+        PHAL_STARTED=true
+        sleep 2
+        if kill -0 "$PHAL_PID" 2>/dev/null; then
+            log_success "OVOS PHAL started (PID: $PHAL_PID)"
+        else
+            log_error "OVOS PHAL failed to start. Check log: tail -40 $OVOS_PHAL_LOG"
+            tail -n 40 "$OVOS_PHAL_LOG" || true
+            on_exit
+            exit 1
+        fi
+    else
+        log_warn "ovos_PHAL binary not found in PATH, skipping PHAL startup"
+    fi
+fi
+
+# Start ovos-audio
+log_info "Starting OVOS audio daemon..."
+if command -v ovos-audio >/dev/null 2>&1; then
+    OVOS_AUDIO_LOG="$LOG_DIR/ovos-audio.log"
+    setsid ovos-audio > "$OVOS_AUDIO_LOG" 2>&1 &
+    AUDIO_PID=$!
+    AUDIO_STARTED=true
+    sleep 2
+    if kill -0 "$AUDIO_PID" 2>/dev/null; then
+        log_success "OVOS audio started (PID: $AUDIO_PID)"
+    else
+        log_error "OVOS audio failed to start. Check log: tail -40 $OVOS_AUDIO_LOG"
+        tail -n 40 "$OVOS_AUDIO_LOG" || true
+        on_exit
+        exit 1
+    fi
+else
+    log_warn "ovos-audio binary not found in PATH, skipping audio startup"
+fi
+
+# Start dinkum listener
+log_info "Starting OVOS dinkum listener..."
+if command -v ovos-dinkum-listener >/dev/null 2>&1; then
+    OVOS_DINKUM_LOG="$LOG_DIR/ovos-dinkum-listener.log"
+    setsid ovos-dinkum-listener > "$OVOS_DINKUM_LOG" 2>&1 &
+    DINKUM_PID=$!
+    DINKUM_STARTED=true
+    sleep 2
+    if kill -0 "$DINKUM_PID" 2>/dev/null; then
+        log_success "OVOS dinkum listener started (PID: $DINKUM_PID)"
+    else
+        log_error "OVOS dinkum listener failed to start. Check log: tail -40 $OVOS_DINKUM_LOG"
+        tail -n 40 "$OVOS_DINKUM_LOG" || true
+        on_exit
+        exit 1
+    fi
+else
+    log_warn "ovos-dinkum-listener not found in PATH, skipping listener startup"
+fi
+
+# 启动 OVOS core (background so we can trap and stop it)
+OVOS_LOG_FILE="$LOG_DIR/ovos-core.log"
+mkdir -p "$(dirname "$OVOS_LOG_FILE")"
+setsid ovos-core $OVOS_ARGS > "$OVOS_LOG_FILE" 2>&1 &
+OVOS_PID=$!
+log_info "OVOS core started (PID: $OVOS_PID), logging to $OVOS_LOG_FILE"
+
+# Stream the ovos-core log to our stdout so the user sees initialization (will be killed on exit)
+setsid tail -n +1 -f "$OVOS_LOG_FILE" &
+TAIL_PID=$!
+
+# Wait for ovos-core to exit; trap will handle cleanup and will also kill the tail
+wait "$OVOS_PID"
+
+# If ovos-core exited, stop the tail
+if [ -n "$TAIL_PID" ]; then
+    kill "$TAIL_PID" 2>/dev/null || true
+    TAIL_PID=""
+fi
 
 echo ""
 echo -e "${YELLOW}OVOS has stopped${NC}"

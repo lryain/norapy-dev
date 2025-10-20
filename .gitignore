@@ -1,1 +1,9 @@
 engine/venv
+.install_logs
+logs/messagebus.log
+logs/ovos-audio.log
+logs/ovos-core.log
+logs/ovos-dev-manual.log
+logs/ovos-dev-precise.log
+logs/ovos-dev.out
+logs/ovos-dinkum-listener.log
